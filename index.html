@@ -829,7 +829,7 @@
                 row.innerHTML = `
                     <td><span class="badge badge-outline">${indicator.subLevel}</span></td>
                     <td>${indicator.objectif || 'N/A'}</td>
-                    <td>${indicator.indicateur}${baselineNote}</td>
+                    <td>${indicator.indicateur}</td>
                     <td><strong>${typeof moroccoValue === 'number' ? moroccoValue.toFixed(2) : moroccoValue}${moroccoValue !== 'N/A' ? ` (${latestMorocco.year})` : ''}</strong></td>
                     <td>${typeof menaValue === 'number' ? menaValue.toFixed(2) : menaValue}${menaValue !== 'N/A' ? ` (${latestMena.year})` : ''}</td>
                     <td>${typeof worldValue === 'number' ? worldValue.toFixed(2) : worldValue}${worldValue !== 'N/A' ? ` (${latestWorld.year})` : ''}</td>
