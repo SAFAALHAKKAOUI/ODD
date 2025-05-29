@@ -1,0 +1,1843 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard ODD Santé - Maroc 2024</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <script
+        src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --primary: #0768B8;
+            --primary-dark: #055A93;
+            --secondary: #2E87C7;
+            --accent: #7EB3E0;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #0288d1;
+            --gradient-primary: linear-gradient(135deg, #0768B8 0%, #2E87C7 100%);
+            --gradient-secondary: linear-gradient(135deg, #7EB3E0 0%, #2E87C7 100%);
+            --gradient-success: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --gradient-warning: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --border-light: #f1f5f9;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+            --space-1: 0.25rem;
+            --space-2: 0.5rem;
+            --space-3: 0.75rem;
+            --space-4: 1rem;
+            --space-5: 1.25rem;
+            --space-6: 1.5rem;
+            --space-8: 2rem;
+            --space-10: 2.5rem;
+            --space-12: 3rem;
+            --radius-sm: 0.375rem;
+            --radius: 0.5rem;
+            --radius-md: 0.75rem;
+            --radius-lg: 1rem;
+            --radius-xl: 1.5rem;
+            --radius-2xl: 2rem;
+            --radius-full: 9999px;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --border-light: #475569;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-tertiary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: var(--radius-full);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+
+        .app {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            z-index: 1000;
+            transform: translateX(0);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+        }
+
+        .sidebar.closed {
+            transform: translateX(-100%);
+        }
+
+        .sidebar-header {
+            padding: var(--space-6);
+            border-bottom: 1px solid var(--border);
+            background: var(--gradient-primary);
+            color: white;
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: var(--space-2);
+        }
+
+        .sidebar-header p {
+            opacity: 0.9;
+            font-size: 0.875rem;
+        }
+
+        .sidebar-nav {
+            padding: var(--space-4);
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: var(--space-3) var(--space-4);
+            margin-bottom: var(--space-2);
+            border-radius: var(--radius-md);
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .nav-item:hover {
+            background: var(--bg-tertiary);
+            color: var(--primary);
+            transform: translateX(4px);
+        }
+
+        .nav-item.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .nav-item i {
+            width: 20px;
+            margin-right: var(--space-3);
+            font-size: 1.125rem;
+        }
+
+        .main-content {
+            margin-left: 280px;
+            transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            min-height: calc(100vh - 60px);
+            flex: 1;
+        }
+
+        .main-content.sidebar-closed {
+            margin-left: 0;
+        }
+
+        .header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: var(--space-4) var(--space-6);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: var(--space-4);
+        }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.25rem;
+            cursor: pointer;
+            padding: var(--space-2);
+            border-radius: var(--radius);
+            transition: all 0.3s ease;
+            display: none;
+        }
+
+        .menu-toggle:hover {
+            background: var(--bg-tertiary);
+            color: var(--primary);
+        }
+
+        .header-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-subtitle {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            margin-top: var(--space-1);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-2);
+            padding: var(--space-3) var(--space-5);
+            border: none;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .btn-icon {
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: var(--space-6);
+        }
+
+        .grid {
+            display: grid;
+            gap: var(--space-6);
+        }
+
+        .grid-cols-1 {
+            grid-template-columns: repeat(1, 1fr);
+        }
+
+        .grid-cols-2 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .grid-cols-3 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .grid-cols-4 {
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            padding: var(--space-6);
+            box-shadow: var(--shadow);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-2xl);
+            border-color: var(--primary);
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--space-6);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--space-2);
+        }
+
+        .card-subtitle {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            background: var(--gradient-primary);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            padding: var(--space-6);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--gradient-primary);
+            opacity: 0.05;
+            transition: opacity 0.3s ease;
+        }
+
+        .stat-card:hover::before {
+            opacity: 0.1;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .stat-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+            margin-bottom: var(--space-2);
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-change {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            margin-top: var(--space-3);
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .stat-change.positive {
+            color: var(--success);
+        }
+
+        .stat-change.negative {
+            color: var(--danger);
+        }
+
+        .filters {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            padding: var(--space-6);
+            margin-bottom: var(--space-6);
+            box-shadow: var(--shadow);
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-2);
+        }
+
+        .filter-label {
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--text-primary);
+        }
+
+        .filter-select {
+            padding: var(--space-3) var(--space-4);
+            border: 2px solid var(--border);
+            border-radius: var(--radius-md);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(7, 104, 184, 0.1);
+        }
+
+        .table-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th {
+            background: var(--bg-tertiary);
+            padding: var(--space-4) var(--space-6);
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .table td {
+            padding: var(--space-4) var(--space-6);
+            border-bottom: 1px solid var(--border);
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .table tr:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: var(--space-1) var(--space-3);
+            border-radius: var(--radius-full);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .badge-success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .badge-warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .badge-info {
+            background: rgba(2, 136, 209, 0.1);
+            color: var(--info);
+            border: 1px solid rgba(2, 136, 209, 0.2);
+        }
+
+        .badge-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+        }
+
+        .progress {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-full);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--gradient-primary);
+            border-radius: var(--radius-full);
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background-image: linear-gradient(-45deg, rgba(255, 255, 255, 0.2) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.2) 75%, transparent 75%, transparent);
+            background-size: 50px 50px;
+            animation: move 2s linear infinite;
+        }
+
+        @keyframes move {
+            0% {
+                background-position: 0 0;
+            }
+
+            100% {
+                background-position: 50px 50px;
+            }
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            padding: var(--space-4);
+            background: var(--bg-primary);
+            border-radius: var(--radius-lg);
+            margin: var(--space-4) 0;
+        }
+
+        .tabs {
+            margin: var(--space-6) 0;
+        }
+
+        .tab-list {
+            display: flex;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-lg);
+            padding: var(--space-1);
+            margin-bottom: var(--space-6);
+            overflow-x: auto;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: var(--space-3) var(--space-4);
+            border: none;
+            background: transparent;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-2);
+        }
+
+        .tab-button:hover {
+            color: var(--text-primary);
+            background: rgba(7, 104, 184, 0.1);
+        }
+
+        .tab-button.active {
+            background: var(--bg-secondary);
+            color: var(--primary);
+            box-shadow: var(--shadow-sm);
+            font-weight: 600;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        footer {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            padding: var(--space-4);
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            position: relative;
+            bottom: 0;
+            width: 100%;
+            height: 60px;
+        }
+
+        @media (max-width: 1024px) {
+            .menu-toggle {
+                display: block;
+            }
+
+            .main-content.sidebar-closed {
+                margin-left: 0;
+            }
+
+            .sidebar {
+                width: 100%;
+                max-width: 320px;
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .grid-cols-4 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: var(--space-4);
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: var(--space-4);
+                text-align: center;
+            }
+
+            .header-actions {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .grid-cols-2,
+            .grid-cols-3,
+            .grid-cols-4 {
+                grid-template-columns: 1fr;
+            }
+
+            .chart-container {
+                height: 300px;
+            }
+
+            .tab-list {
+                flex-direction: column;
+            }
+
+            .table-container {
+                overflow-x: auto;
+            }
+
+            .table th,
+            .table td {
+                padding: var(--space-3);
+                font-size: 0.8rem;
+            }
+        }
+
+        .flex {
+            display: flex;
+        }
+
+        .items-center {
+            align-items: center;
+        }
+
+        .justify-between {
+            justify-content: space-between;
+        }
+
+        .justify-center {
+            justify-content: center;
+        }
+
+        .gap-2 {
+            gap: var(--space-2);
+        }
+
+        .gap-3 {
+            gap: var(--space-3);
+        }
+
+        .gap-4 {
+            gap: var(--space-4);
+        }
+
+        .mb-2 {
+            margin-bottom: var(--space-2);
+        }
+
+        .mb-4 {
+            margin-bottom: var(--space-4);
+        }
+
+        .mb-6 {
+            margin-bottom: var(--space-6);
+        }
+
+        .mt-4 {
+            margin-top: var(--space-4);
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .font-medium {
+            font-weight: 500;
+        }
+
+        .font-semibold {
+            font-weight: 600;
+        }
+
+        .font-bold {
+            font-weight: 700;
+        }
+
+        .text-sm {
+            font-size: 0.875rem;
+        }
+
+        .text-xs {
+            font-size: 0.75rem;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 200px;
+            color: var(--text-muted);
+        }
+
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid var(--border);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: var(--space-2);
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .fade-in {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .slide-in {
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+        <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-heartbeat"></i> ODD Santé</h2>
+                <p>Tableau de bord interactif</p>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-section="dashboard">
+                    <i class="fas fa-chart-pie"></i>
+                    <span>Tableau de bord</span>
+                </a>
+                <a href="#" class="nav-item" data-section="indicators">
+                    <i class="fas fa-list-check"></i>
+                    <span>Indicateurs</span>
+                </a>
+                <a href="#" class="nav-item" data-section="trends">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Évolution Temporelle</span>
+                </a>
+                <a href="#" class="nav-item" data-section="comparison">
+                    <i class="fas fa-balance-scale"></i>
+                    <span>Comparaison</span>
+                </a>
+                <a href="#" class="nav-item" data-section="positioning">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>Positionnement</span>
+                </a>
+            </nav>
+        </aside>
+        <main class="main-content" id="mainContent">
+            <header class="header">
+                <div class="header-content">
+                    <div class="header-left">
+                        <button class="menu-toggle" onclick="toggleSidebar()">
+                            <i class="fas fa-bars"></i>
+                        </button>
+                        <div>
+                            <h1 class="header-title">Dashboard ODD Santé</h1>
+                            <p class="header-subtitle">Suivi des indicateurs de santé - Maroc, MENA, Monde</p>
+                        </div>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn btn-secondary btn-icon" onclick="toggleTheme()" title="Changer le thème">
+                            <i class="fas fa-moon" id="theme-icon"></i>
+                        </button>
+                        <button class="btn btn-primary" onclick="exportData()">
+                            <i class="fas fa-download"></i>
+                            <span>Exporter</span>
+                        </button>
+                    </div>
+                </div>
+            </header>
+            <div class="container">
+                <div id="status-message" class="status-message"></div>
+                <section id="dashboard-section" class="section active">
+                    <div class="grid grid-cols-4 mb-6">
+                        <div class="stat-card fade-in">
+                            <div class="stat-content">
+                                <div class="stat-value" id="total-indicators">0</div>
+                                <div class="stat-label">Total Indicateurs</div>
+                                <div class="stat-change positive">
+                                    <i class="fas fa-arrow-up"></i>
+                                    <span>Focus sur 3.2.1</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-card fade-in">
+                            <div class="stat-content">
+                                <div class="stat-value" id="achieved-targets">0</div>
+                                <div class="stat-label">Cibles Atteintes</div>
+                                <div class="stat-change positive">
+                                    <i class="fas fa-check"></i>
+                                    <span>Objectif atteint</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-card fade-in">
+                            <div class="stat-content">
+                                <div class="stat-value" id="progress-percentage">0%</div>
+                                <div class="stat-label">Progression Globale</div>
+                                <div class="stat-change positive">
+                                    <i class="fas fa-arrow-up"></i>
+                                    <span>Target ≤25</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-card fade-in">
+                            <div class="stat-content">
+                                <div class="stat-value">2030</div>
+                                <div class="stat-label">Échéance ODD</div>
+                                <div class="stat-change">
+                                    <i class="fas fa-calendar"></i>
+                                    <span>5 ans restants</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="filters fade-in">
+                        <div class="grid grid-cols-4">
+                            <div class="filter-group">
+                                <label class="filter-label">Année</label>
+                                <select class="filter-select" id="year-filter" onchange="applyFilters()">
+                                    <option value="2024">2024</option>
+                                    <option value="2023">2023</option>
+                                    <option value="2022">2022</option>
+                                    <option value="2021">2021</option>
+                                    <option value="2020">2020</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label class="filter-label">Objectif ODD</label>
+                                <select class="filter-select" id="odd-filter" onchange="applyFilters()">
+                                    <option value="all">All</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label class="filter-label">Statut</label>
+                                <select class="filter-select" id="status-filter" onchange="applyFilters()">
+                                    <option value="all">Tous</option>
+                                    <option value="achieved">Atteint</option>
+                                    <option value="progress">En progression</option>
+                                    <option value="attention">Attention</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label class="filter-label">Région</label>
+                                <select class="filter-select" id="region-filter" onchange="applyFilters()">
+                                    <option value="all">Toutes</option>
+                                    <option value="morocco">Maroc</option>
+                                    <option value="mena">MENA</option>
+                                    <option value="world">Monde</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tabs fade-in">
+                        <div class="tab-list">
+                            <button class="tab-button active" onclick="showTab('overview')">
+                                <i class="fas fa-chart-pie"></i>
+                                Vue d'ensemble
+                            </button>
+                            <button class="tab-button" onclick="showTab('table')">
+                                <i class="fas fa-table"></i>
+                                Tableau
+                            </button>
+                            <button class="tab-button" onclick="showTab('charts')">
+                                <i class="fas fa-chart-bar"></i>
+                                Graphiques
+                            </button>
+                            <button class="tab-button" onclick="showTab('analysis')">
+                                <i class="fas fa-microscope"></i>
+                                Analyse
+                            </button>
+                        </div>
+                        <div id="overview-tab" class="tab-content active">
+                            <div class="grid grid-cols-2">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <div>
+                                            <h3 class="card-title">Progression par Objectif ODD</h3>
+                                            <p class="card-subtitle">Statut d'avancement des ODD</p>
+                                        </div>
+                                        <div class="card-icon">
+                                            <i class="fas fa-chart-pie"></i>
+                                        </div>
+                                    </div>
+                                    <div class="chart-container">
+                                        <canvas id="category-chart"></canvas>
+                                    </div>
+                                </div>
+                                <div class="card">
+                                    <div class="card-header">
+                                        <div>
+                                            <h3 class="card-title">Positionnement du Maroc</h3>
+                                            <p class="card-subtitle">Comparaison régionale</p>
+                                        </div>
+                                        <div class="card-icon">
+                                            <i class="fas fa-globe"></i>
+                                        </div>
+                                    </div>
+                                    <div class="chart-container">
+                                        <canvas id="positioning-chart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="table-tab" class="tab-content">
+                            <div class="card">
+                                <div class="card-header">
+                                    <div>
+                                        <h3 class="card-title">Indicateurs ODD</h3>
+                                        <p class="card-subtitle">Données détaillées par région et année</p>
+                                    </div>
+                                </div>
+                                <div class="table-container">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>ODD</th>
+                                                <th>Indicateur</th>
+                                                <th>Objectif</th>
+                                                <th>Maroc</th>
+                                                <th>MENA</th>
+                                                <th>Monde</th>
+                                                <th>Cible</th>
+                                                <th>Statut</th>
+                                                <th>Progression</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="indicators-table-body"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="charts-tab" class="tab-content">
+                            <div class="grid grid-cols-2">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <div>
+                                            <h3 class="card-title">Évolution Temporelle</h3>
+                                            <p class="card-subtitle">Tendances 2020-2024</p>
+                                        </div>
+                                    </div>
+                                    <div class="chart-container">
+                                        <canvas id="trend-chart"></canvas>
+                                    </div>
+                                </div>
+                                <div class="card">
+                                    <div class="card-header">
+                                        <div>
+                                            <h3 class="card-title">Comparaison Régionale</h3>
+                                            <p class="card-subtitle">Performance par région</p>
+                                        </div>
+                                    </div>
+                                    <div class="chart-container">
+                                        <canvas id="comparison-chart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="analysis-tab" class="tab-content">
+                            <div class="grid grid-cols-1">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <div>
+                                            <h3 class="card-title">Analyse Détaillée</h3>
+                                            <p class="card-subtitle">Insights et recommandations</p>
+                                        </div>
+                                    </div>
+                                    <div id="analysis-content"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <section id="indicators-section" class="section">
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h3 class="card-title">Liste des Indicateurs</h3>
+                                <p class="card-subtitle">Détails des objectifs mesurables</p>
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>ODD</th>
+                                        <th>Indicateur</th>
+                                        <th>Objectif</th>
+                                        <th>Cible</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="indicators-list-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+                <section id="trends-section" class="section">
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h3 class="card-title">Tendances des Indicateurs</h3>
+                                <p class="card-subtitle">Évolution sur les années</p>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="trends-section-chart"></canvas>
+                        </div>
+                    </div>
+                </section>
+                <section id="comparison-section" class="section">
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h3 class="card-title">Comparaison Régionale</h3>
+                                <p class="card-subtitle">Performance par région</p>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="comparison-section-chart"></canvas>
+                        </div>
+                    </div>
+                </section>
+                <section id="positioning-section" class="section">
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h3 class="card-title">Positionnement par Indicateur</h3>
+                                <p class="card-subtitle">Comparaison régionale</p>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="positioning-section-chart"></canvas>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+        <footer>
+            © 2025 DecisiveAI Tous droits réservés.
+        </footer>
+    </div>
+
+    <script>
+        const menaCountries = ['DZA', 'BHR', 'EGY', 'IRN', 'IRQ', 'JOR', 'KWT', 'LBN', 'LBY', 'OMN', 'QAT', 'SAU', 'SYR', 'TUN', 'ARE', 'PSE', 'YEM'];
+        let healthIndicators = [];
+        let currentYear = '2024';
+        let currentOdd = 'all';
+        let currentStatus = 'all';
+        let currentRegion = 'all';
+        let isDarkMode = false;
+        let charts = {};
+        let sidebarOpen = true;
+        const years = ['2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023', '2024'];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeApp();
+            setupSidebar();
+        });
+
+        async function initializeApp() {
+            try {
+                document.getElementById('status-message').innerHTML = '<div class="loading">Chargement des données... <div class="spinner"></div></div>';
+                await loadData();
+                document.getElementById('status-message').innerHTML = '';
+                populateOddFilter();
+                populateTable();
+                updateStats();
+                initializeCharts();
+                updateAnalysis();
+            } catch (error) {
+                document.getElementById('status-message').innerHTML = `<div class="loading" style="color: var(--danger);">Erreur de chargement des données : ${error.message} <div class="spinner"></div></div>`;
+            }
+        }
+
+        function setupSidebar() {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const section = item.getAttribute('data-section');
+                    showSection(section);
+                    if (window.innerWidth <= 1024) closeSidebar();
+                });
+            });
+            showSection('dashboard');
+        }
+
+        function toggleSidebar() {
+            sidebarOpen = !sidebarOpen;
+            document.getElementById('sidebar').classList.toggle('closed', !sidebarOpen);
+            document.getElementById('mainContent').classList.toggle('sidebar-closed', !sidebarOpen);
+            document.getElementById('overlay').classList.toggle('active', sidebarOpen);
+        }
+
+        function closeSidebar() {
+            sidebarOpen = false;
+            document.getElementById('sidebar').classList.add('closed');
+            document.getElementById('mainContent').classList.add('sidebar-closed');
+            document.getElementById('overlay').classList.remove('active');
+        }
+
+        function toggleTheme() {
+            isDarkMode = !isDarkMode;
+            document.body.setAttribute('data-theme', isDarkMode ? 'dark' : '');
+            document.getElementById('theme-icon').className = isDarkMode ? 'fas fa-sun' : 'fas fa-moon';
+            updateChartsTheme();
+        }
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            const sectionElement = document.getElementById(`${sectionId}-section`);
+            if (sectionElement) sectionElement.classList.add('active');
+            const navItem = document.querySelector(`.nav-item[data-section="${sectionId}"]`);
+            if (navItem) navItem.classList.add('active');
+            if (sectionId === 'trends') initializeTrendsSectionChart();
+            if (sectionId === 'comparison') initializeComparisonSectionChart();
+            if (sectionId === 'positioning') initializePositioningSectionChart();
+            if (sectionId === 'indicators') populateIndicatorsList();
+        }
+
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(button => button.classList.remove('active'));
+            const tabElement = document.getElementById(`${tabName}-tab`);
+            if (tabElement) tabElement.classList.add('active');
+            const tabButton = document.querySelector(`.tab-button[onclick="showTab('${tabName}')"]`);
+            if (tabButton) tabButton.classList.add('active');
+            if (tabName === 'charts') initializeTrendCharts();
+            if (tabName === 'overview') initializeOverviewCharts();
+        }
+
+        function applyFilters() {
+            currentYear = document.getElementById('year-filter').value;
+            currentOdd = document.getElementById('odd-filter').value;
+            currentStatus = document.getElementById('status-filter').value;
+            currentRegion = document.getElementById('region-filter').value;
+            populateTable();
+            updateStats();
+            initializeCharts();
+            updateAnalysis();
+        }
+
+        function getFilteredData() {
+            return healthIndicators.filter(ind => {
+                if (currentOdd !== 'all' && ind.cible !== currentOdd) return false;
+                if (currentStatus !== 'all' && getIndicatorStatus(ind) !== currentStatus) return false;
+                if (currentRegion !== 'all') {
+                    const regionValue = ind[currentRegion] && ind[currentRegion][currentYear] !== undefined ? ind[currentRegion][currentYear] : null;
+                    if (!regionValue && currentRegion !== 'all') return false;
+                }
+                return true;
+            });
+        }
+
+        function getIndicatorStatus(indicator) {
+            const moroccoValue = indicator.morocco[currentYear];
+            if (!moroccoValue || !indicator.target) return 'attention';
+            if (moroccoValue <= indicator.target) return 'achieved';
+            const baselineValue = indicator.baseline?.morocco || moroccoValue;
+            const annualReduction = (baselineValue - moroccoValue) / (2024 - 2020);
+            const projectedValue = moroccoValue - annualReduction * (2030 - 2024);
+            return projectedValue <= indicator.target ? 'progress' : 'attention';
+        }
+
+        function calculateProgress(indicator) {
+            const moroccoValue = indicator.morocco[currentYear];
+            const baseline = indicator.baseline?.morocco || moroccoValue;
+            const target = indicator.target;
+            if (!moroccoValue || !baseline || !target) return 0;
+            const progress = Math.min(100, ((baseline - moroccoValue) / (baseline - target)) * 100);
+            return isNaN(progress) || progress < 0 ? 0 : progress;
+        }
+
+        function populateOddFilter() {
+            const oddFilter = document.getElementById('odd-filter');
+            oddFilter.innerHTML = '<option value="all">Tous</option>';
+            const uniqueOdds = [...new Set(healthIndicators.map(ind => ind.cible))].filter(odd => odd !== 'N/A');
+            uniqueOdds.forEach(odd => {
+                const option = document.createElement('option');
+                option.value = odd;
+                option.textContent = `ODD ${odd}`;
+                oddFilter.appendChild(option);
+            });
+        }
+
+        function populateTable() {
+            const tbody = document.getElementById('indicators-table-body');
+            tbody.innerHTML = '';
+            getFilteredData().forEach(indicator => {
+                const moroccoValue = indicator.morocco[currentYear] ?? 'N/A';
+                const menaValue = indicator.mena[currentYear] ?? 'N/A';
+                const worldValue = indicator.world[currentYear] ?? 'N/A';
+                const status = getIndicatorStatus(indicator);
+                const progress = calculateProgress(indicator);
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><span class="badge badge-outline">${indicator.cible}</span></td>
+                    <td><i class="${indicator.icon || 'fas fa-chart-line'}"></i> ${indicator.indicateur}</td>
+                    <td>${indicator.objectif || 'N/A'}</td>
+                    <td>${typeof moroccoValue === 'number' ? moroccoValue.toFixed(2) : moroccoValue}</td>
+                    <td>${typeof menaValue === 'number' ? menaValue.toFixed(2) : menaValue}</td>
+                    <td>${typeof worldValue === 'number' ? worldValue.toFixed(2) : worldValue}</td>
+                    <td>${indicator.target ?? 'N/A'} ${indicator.unit || ''}</td>
+                    <td><span class="badge badge-${getBadgeClass(status)}">${getStatusText(status)}</span></td>
+                    <td>
+                        <div class="progress" style="width: 100px;">
+                            <div class="progress-bar" style="width: ${progress}%"></div>
+                        </div>
+                        <span>${progress.toFixed(1)}%</span>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function populateIndicatorsList() {
+            const tbody = document.getElementById('indicators-list-body');
+            tbody.innerHTML = '';
+            getFilteredData().forEach(indicator => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><span class="badge badge-outline">${indicator.cible}</span></td>
+                    <td>${indicator.indicateur}</td>
+                    <td>${indicator.objectif}</td>
+                    <td>${indicator.target ? `≤${indicator.target} ${indicator.unit || ''}` : 'N/A'}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function getBadgeClass(status) {
+            return { achieved: 'success', progress: 'info', attention: 'warning' }[status] || 'outline';
+        }
+
+        function getStatusText(status) {
+            return { achieved: 'Atteint', progress: 'En cours', attention: 'Attention' }[status] || 'Inconnu';
+        }
+
+        function updateStats() {
+            const filteredData = getFilteredData();
+            const achievedCount = filteredData.filter(ind => getIndicatorStatus(ind) === 'achieved').length;
+            const totalProgress = filteredData.reduce((sum, ind) => sum + calculateProgress(ind), 0) / (filteredData.length || 1);
+            document.getElementById('total-indicators').textContent = filteredData.length;
+            document.getElementById('achieved-targets').textContent = achievedCount;
+            document.getElementById('progress-percentage').textContent = `${totalProgress.toFixed(1)}%`;
+        }
+
+        function initializeCharts() {
+            initializeOverviewCharts();
+        }
+
+        function initializeOverviewCharts() {
+            initializeCategoryChart();
+            initializePositioningChart();
+        }
+
+        function initializeCategoryChart() {
+            const ctx = document.getElementById('category-chart')?.getContext('2d');
+            if (!ctx) return;
+            if (charts.categoryChart) charts.categoryChart.destroy();
+            const odds = [...new Set(getFilteredData().map(ind => ind.cible))].filter(odd => odd !== 'N/A');
+            const data = odds.map(odd => {
+                const indicators = getFilteredData().filter(ind => ind.cible === odd);
+                return indicators.reduce((sum, ind) => sum + calculateProgress(ind), 0) / indicators.length;
+            });
+            charts.categoryChart = new Chart(ctx, {
+                type: 'pie',
+                data: { labels: odds.map(odd => `ODD ${odd}`), datasets: [{ data, backgroundColor: ['#0768B8', '#2E87C7', '#7EB3E0'], borderWidth: 1 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: isDarkMode ? '#f8fafc' : '#0f172a' } } } }
+            });
+        }
+
+        function initializePositioningChart() {
+            const ctx = document.getElementById('positioning-chart')?.getContext('2d');
+            if (!ctx) return;
+            if (charts.positioningChart) charts.positioningChart.destroy();
+            const filteredData = getFilteredData();
+            charts.positioningChart = new Chart(ctx, {
+                type: 'radar',
+                data: { labels: filteredData.map(ind => ind.id), datasets: [{ label: 'Maroc', data: filteredData.map(ind => calculateProgress(ind)), backgroundColor: 'rgba(7, 104, 184, 0.2)', borderColor: '#0768B8', pointBackgroundColor: '#0768B8' }] },
+                options: { responsive: true, maintainAspectRatio: false, scales: { r: { min: 0, max: 100, ticks: { color: isDarkMode ? '#94a3b8' : '#64748b' } } }, plugins: { legend: { labels: { color: isDarkMode ? '#f8fafc' : '#0f172a' } } } }
+            });
+        }
+
+        function initializeTrendCharts() {
+            initializeTrendChart();
+            initializeComparisonChart();
+        }
+
+        function initializeTrendChart() {
+            const ctx = document.getElementById('trend-chart')?.getContext('2d');
+            if (!ctx) return;
+            if (charts.trendChart) charts.trendChart.destroy();
+            const filteredData = getFilteredData();
+            if (filteredData.length > 0) {
+                const indicator = filteredData[0];
+                const years = ['2020', '2021', '2022', '2023', '2024'];
+                charts.trendChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: years,
+                        datasets: [
+                            { label: 'Maroc', data: years.map(y => indicator.morocco[y] ?? null), borderColor: '#0768B8', backgroundColor: 'rgba(7, 104, 184, 0.1)', tension: 0.3 },
+                            { label: 'MENA', data: years.map(y => indicator.mena[y] ?? null), borderColor: '#2E87C7', backgroundColor: 'rgba(46, 135, 199, 0.1)', tension: 0.3 },
+                            { label: 'Monde', data: years.map(y => indicator.world[y] ?? null), borderColor: '#7EB3E0', backgroundColor: 'rgba(126, 179, 224, 0.1)', tension: 0.3 }
+                        ]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: isDarkMode ? '#94a3b8' : '#64748b' } }, y: { ticks: { color: isDarkMode ? '#94a3b8' : '#64748b' } } }, plugins: { legend: { labels: { color: isDarkMode ? '#f8fafc' : '#0f172a' } } } }
+                });
+            }
+        }
+
+        function initializeComparisonChart() {
+            const ctx = document.getElementById('comparison-chart')?.getContext('2d');
+            if (!ctx) return;
+            if (charts.comparisonChart) charts.comparisonChart.destroy();
+            const filteredData = getFilteredData();
+            charts.comparisonChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: filteredData.map(ind => ind.id),
+                    datasets: [
+                        { label: 'Maroc', data: filteredData.map(ind => ind.morocco[currentYear] ?? 0), backgroundColor: '#0768B8' },
+                        { label: 'MENA', data: filteredData.map(ind => ind.mena[currentYear] ?? 0), backgroundColor: '#2E87C7' },
+                        { label: 'Monde', data: filteredData.map(ind => ind.world[currentYear] ?? 0), backgroundColor: '#7EB3E0' }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: isDarkMode ? '#94a3b8' : '#64748b' } }, y: { ticks: { color: isDarkMode ? '#94a3b8' : '#64748b' } } }, plugins: { legend: { labels: { color: isDarkMode ? '#f8fafc' : '#0f172a' } } } }
+            });
+        }
+
+        function initializeTrendsSectionChart() {
+            const ctx = document.getElementById('trends-section-chart')?.getContext('2d');
+            if (!ctx) return;
+            if (charts.trendsSectionChart) charts.trendsSectionChart.destroy();
+            const filteredData = getFilteredData();
+            if (filteredData.length > 0) {
+                const indicator = filteredData[0];
+                const years = ['2020', '2021', '2022', '2023', '2024'];
+                charts.trendsSectionChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: years,
+                        datasets: [
+                            { label: 'Maroc', data: years.map(y => indicator.morocco[y] ?? null), borderColor: '#0768B8', backgroundColor: 'rgba(7, 104, 184, 0.1)', tension: 0.3 },
+                            { label: 'MENA', data: years.map(y => indicator.mena[y] ?? null), borderColor: '#2E87C7', backgroundColor: 'rgba(46, 135, 199, 0.1)', tension: 0.3 },
+                            { label: 'Monde', data: years.map(y => indicator.world[y] ?? null), borderColor: '#7EB3E0', backgroundColor: 'rgba(126, 179, 224, 0.1)', tension: 0.3 }
+                        ]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: isDarkMode ? '#94a3b8' : '#64748b' } }, y: { ticks: { color: isDarkMode ? '#94a3b8' : '#64748b' } } }, plugins: { legend: { labels: { color: isDarkMode ? '#f8fafc' : '#0f172a' } } } }
+                });
+            }
+        }
+
+        function initializeComparisonSectionChart() {
+            const ctx = document.getElementById('comparison-section-chart')?.getContext('2d');
+            if (!ctx) return;
+            if (charts.comparisonSectionChart) charts.comparisonSectionChart.destroy();
+            const filteredData = getFilteredData();
+            charts.comparisonSectionChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: filteredData.map(ind => ind.id),
+                    datasets: [
+                        { label: 'Maroc', data: filteredData.map(ind => ind.morocco[currentYear] ?? 0), backgroundColor: '#0768B8' },
+                        { label: 'MENA', data: filteredData.map(ind => ind.mena[currentYear] ?? 0), backgroundColor: '#2E87C7' },
+                        { label: 'Monde', data: filteredData.map(ind => ind.world[currentYear] ?? 0), backgroundColor: '#7EB3E0' }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: isDarkMode ? '#94a3b8' : '#64748b' } }, y: { ticks: { color: isDarkMode ? '#94a3b8' : '#64748b' } } }, plugins: { legend: { labels: { color: isDarkMode ? '#f8fafc' : '#0f172a' } } } }
+            });
+        }
+
+        function initializePositioningSectionChart() {
+            const ctx = document.getElementById('positioning-section-chart')?.getContext('2d');
+            if (!ctx) return;
+            if (charts.positioningSectionChart) charts.positioningSectionChart.destroy();
+            const filteredData = getFilteredData();
+            charts.positioningSectionChart = new Chart(ctx, {
+                type: 'radar',
+                data: { labels: filteredData.map(ind => ind.id), datasets: [{ label: 'Maroc', data: filteredData.map(ind => calculateProgress(ind)), backgroundColor: 'rgba(7, 104, 184, 0.2)', borderColor: '#0768B8', pointBackgroundColor: '#0768B8' }] },
+                options: { responsive: true, maintainAspectRatio: false, scales: { r: { min: 0, max: 100, ticks: { color: isDarkMode ? '#94a3b8' : '#64748b' } } }, plugins: { legend: { labels: { color: isDarkMode ? '#f8fafc' : '#0f172a' } } } }
+            });
+        }
+
+        function updateChartsTheme() {
+            Object.values(charts).forEach(chart => {
+                chart.options.plugins.legend.labels.color = isDarkMode ? '#f8fafc' : '#0f172a';
+                if (chart.options.scales?.x) chart.options.scales.x.ticks.color = isDarkMode ? '#94a3b8' : '#64748b';
+                if (chart.options.scales?.y) chart.options.scales.y.ticks.color = isDarkMode ? '#94a3b8' : '#64748b';
+                if (chart.options.scales?.r) chart.options.scales.r.ticks.color = isDarkMode ? '#94a3b8' : '#64748b';
+                chart.update();
+            });
+        }
+
+        function updateAnalysis() {
+            const analysisContent = document.getElementById('analysis-content');
+            const filteredData = getFilteredData();
+            const achievedCount = filteredData.filter(ind => getIndicatorStatus(ind) === 'achieved').length;
+            const progressCount = filteredData.filter(ind => getIndicatorStatus(ind) === 'progress').length;
+            const attentionCount = filteredData.filter(ind => getIndicatorStatus(ind) === 'attention').length;
+            const totalProgress = filteredData.reduce((sum, ind) => sum + calculateProgress(ind), 0) / (filteredData.length || 1);
+            analysisContent.innerHTML = `
+                <div class="grid grid-cols-3 mb-6">
+                    <div class="text-center">
+                        <div class="stat-value" style="font-size: 2rem;">${achievedCount}</div>
+                        <div class="stat-label">Cibles Atteintes</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="stat-value" style="font-size: 2rem;">${progressCount}</div>
+                        <div class="stat-label">En Progression</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="stat-value" style="font-size: 2rem;">${attentionCount}</div>
+                        <div class="stat-label">Attention Requise</div>
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <h4 class="font-semibold mb-3">Progression Globale</h4>
+                    <div class="progress mb-2" style="height: 12px;">
+                        <div class="progress-bar" style="width: ${totalProgress.toFixed(1)}%"></div>
+                    </div>
+                    <div class="text-right text-sm text-muted">${totalProgress.toFixed(1)}%</div>
+                </div>
+                <div class="mb-6">
+                    <h4 class="font-semibold mb-3">Points Clés</h4>
+                    <ul style="list-style: none; padding: 0;">
+                        <li class="mb-2 flex items-center gap-2"><i class="fas fa-check-circle" style="color: var(--success);"></i><span>Le Maroc a atteint ${achievedCount} cible(s)</span></li>
+                        <li class="mb-2 flex items-center gap-2"><i class="fas fa-trending-up" style="color: var(--info);"></i><span>Progression de ${totalProgress.toFixed(1)}%</span></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-3">Recommandations</h4>
+                    <div class="grid grid-cols-1 gap-3">
+                        ${attentionCount > 0 ? `<div class="card" style="padding: 1rem; background: rgba(245, 158, 11, 0.1); border-color: var(--warning);"><div class="flex items-center gap-2 mb-2"><i class="fas fa-exclamation-triangle" style="color: var(--warning);"></i><span class="font-medium">Priorité</span></div><p class="text-sm">Renforcer les efforts si nécessaire.</p></div>` : ''}
+                        <div class="card" style="padding: 1rem; background: rgba(16, 185, 129, 0.1); border-color: var(--success);"><div class="flex items-center gap-2 mb-2"><i class="fas fa-chart-line" style="color: var(--success);"></i><span class="font-medium">Soutenabilité</span></div><p class="text-sm">Maintenir les efforts pour la durabilité.</p></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function exportData() {
+            const data = getFilteredData().map(ind => ({
+                'ODD': ind.cible,
+                'Indicateur': ind.indicateur,
+                'Objectif': ind.objectif || 'N/A',
+                'Maroc': ind.morocco[currentYear] ?? 'N/A',
+                'MENA': ind.mena[currentYear] ?? 'N/A',
+                'Monde': ind.world[currentYear] ?? 'N/A',
+                'Cible': ind.target ?? 'N/A',
+                'Statut': getStatusText(getIndicatorStatus(ind)),
+                'Progression': calculateProgress(ind).toFixed(1) + '%'
+            }));
+            const csv = Papa.unparse(data);
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `odd-sante-export-${currentYear}.csv`;
+            link.click();
+        }
+
+        async function loadData() {
+            // Charger le fichier ODD_cibles.csv
+            const targetsResponse = await fetch('ODD_cibles_english.csv');
+            if (!targetsResponse.ok) throw new Error('Fichier ODD_cibles.csv introuvable ou inaccessible');
+            const targetsText = await targetsResponse.text();
+            const targetsData = Papa.parse(targetsText, { header: true, skipEmptyLines: true }).data;
+
+            // Normaliser les clés de targetsData
+            const normalizedTargetsData = targetsData.map(row => {
+                return Object.fromEntries(
+                    Object.entries(row).map(([key, value]) => [key.trim(), value])
+                );
+            });
+
+            // Ajouter d'autres fichiers .xls ici
+            const xlsFiles = [
+                'API_SH.DYN.NMRT_DS2_en_excel_v2_86189.xls',
+                'API_SH.STA.SUIC.P5_DS2_en_excel_v2_87730.xls', // Ajoutez vos autres fichiers ici
+                'API_SH.HIV.INCD.ZS_DS2_en_excel_v2_89903.xls',
+                'API_SH.DYN.MORT_DS2_en_excel_v2_86179.xls',
+                
+                
+                'API_SH.MLR.INCD.P3_DS2_en_excel_v2_96987.xls'
+                 // Ajoutez vos autres fichiers ici
+            ];
+            healthIndicators = [];
+
+            for (const file of xlsFiles) {
+                const response = await fetch(file);
+                if (!response.ok) throw new Error(`Fichier ${file} introuvable ou inaccessible`);
+                const arrayBuffer = await response.arrayBuffer();
+                const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+                const sheet = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
+
+                // Vérifier les en-têtes
+                const headers = sheet[0].map(h => h.trim());
+                const indicatorCodeIndex = headers.indexOf('Indicator Code');
+                const countryNameIndex = headers.indexOf('Country Name');
+                const countryCodeIndex = headers.indexOf('Country Code');
+                const indicatorNameIndex = headers.indexOf('Indicator Name');
+                const yearIndices = years.map(year => headers.indexOf(year));
+
+                if (indicatorCodeIndex === -1 || countryNameIndex === -1 || countryCodeIndex === -1 || yearIndices.includes(-1)) {
+                    throw new Error(`Structure incorrecte dans ${file}. Vérifie les colonnes.`);
+                }
+
+                // Compteurs pour MENA
+                const menaCounts = years.reduce((acc, year) => ({ ...acc, [year]: 0 }), {});
+                const menaValues = years.reduce((acc, year) => ({ ...acc, [year]: 0 }), {});
+
+                // Traiter chaque ligne
+                const countryData = {};
+                for (let i = 1; i < sheet.length; i++) {
+                    const row = sheet[i];
+                    const indicatorCode = row[indicatorCodeIndex]?.trim();
+                    const countryName = row[countryNameIndex]?.trim();
+                    const countryCode = row[countryCodeIndex]?.trim();
+                    const indicatorName = row[indicatorNameIndex]?.trim();
+
+                    if (!indicatorCode || !countryName || !countryCode) continue;
+
+                    const values = yearIndices.map(idx => row[idx] !== undefined && row[idx] !== '' ? parseFloat(row[idx]) : null);
+
+                    // Stocker les données par pays
+                    if (!countryData[indicatorCode]) {
+                        countryData[indicatorCode] = {};
+                    }
+                    countryData[indicatorCode][countryCode] = values;
+
+                    // Calculer les moyennes MENA
+                    if (menaCountries.includes(countryCode)) {
+                        years.forEach((year, idx) => {
+                            const value = values[idx];
+                            if (value !== null && !isNaN(value)) {
+                                menaValues[year] = (menaValues[year] || 0) + value;
+                                menaCounts[year]++;
+                            }
+                        });
+                    }
+                }
+
+                // Créer les indicateurs
+                for (const indicatorCode in countryData) {
+                    const target = normalizedTargetsData.find(t => t['World Bank / UN SDG Code']?.trim() === indicatorCode);
+                    let measurableTargetValue = null;
+                    let unit = '';
+
+                    // Extraire la cible mesurable et l'unité
+                    if (target && target['Measurable Target (Value)']) {
+                        const targetValueMatch = target['Measurable Target (Value)'].match(/≤?(\d+\.?\d*)\s*(.*)/);
+                        if (targetValueMatch) {
+                            measurableTargetValue = parseFloat(targetValueMatch[1]);
+                            unit = targetValueMatch[2] || '';
+                        }
+                    }
+
+                    const indicator = {
+                        id: indicatorCode,
+                        cible: target ? target['SDG Code'] : 'N/A',
+                        indicateur: target ? target['Indicator (English)'] : (indicatorNameIndex !== -1 ? sheet[1][indicatorNameIndex]?.trim() : 'Unknown Indicator'),
+                        objectif: target ? target['Official SDG Target (formulation)'] : 'N/A',
+                        target: measurableTargetValue,
+                        unit: unit,
+                        baseline: {},
+                        morocco: {},
+                        mena: {},
+                        world: {}
+                    };
+
+                    // Remplir les données pour Maroc, Monde et MENA
+                    years.forEach((year, idx) => {
+                        // Maroc
+                        if (countryData[indicatorCode]['MAR']) {
+                            const value = countryData[indicatorCode]['MAR'][idx];
+                            if (value !== null && !isNaN(value)) {
+                                indicator.morocco[year] = value;
+                                if (year === '2016') {
+                                    indicator.baseline.morocco = value;
+                                }
+                            }
+                        }
+
+                        // Monde
+                        if (countryData[indicatorCode]['WLD']) {
+                            const value = countryData[indicatorCode]['WLD'][idx];
+                            if (value !== null && !isNaN(value)) {
+                                indicator.world[year] = value;
+                            }
+                        }
+
+                        // MENA
+                        if (menaCounts[year] > 0) {
+                            const avg = menaValues[year] / menaCounts[year];
+                            if (!isNaN(avg)) {
+                                indicator.mena[year] = avg;
+                            }
+                        }
+                    });
+
+                    healthIndicators.push(indicator);
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>
