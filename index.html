@@ -824,7 +824,7 @@
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th>Indicateur</th>
+                                    <th onclick="sortTable()">Indicateur</th>
                                     <th>Maroc</th>
                                     <th>MENA</th>
                                     <th>Monde</th>
@@ -942,7 +942,7 @@
                 const asterisks = targetValueStr.match(/\*+$/) ? targetValueStr.match(/\*+$/)[0] : '';
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td onclick="showComparison('${indicator.indicateur}', ${index})">${indicator.indicateur}</td>
+                    <td onclick="showComparison('${indicator.id}', '${indicator.indicateur}')">${indicator.indicateur}</td>
                     <td><strong>${typeof moroccoValue === 'number' ? moroccoValue.toFixed(2) : moroccoValue}</strong></td>
                     <td>${typeof menaValue === 'number' ? menaValue.toFixed(2) : menaValue}</td>
                     <td>${typeof worldValue === 'number' ? worldValue.toFixed(2) : worldValue}</td>
@@ -1103,8 +1103,10 @@
             }
         }
 
-        function showComparison(indicatorName, index) {
-            const indicator = healthIndicators[index];
+        function showComparison(indicatorId, indicatorName) {
+            const indicator = healthIndicators.find(ind => ind.id === indicatorId);
+            if (!indicator) return;
+
             const latestMorocco = getLatestValue(indicator.morocco);
             const latestMena = getLatestValue(indicator.mena);
             const latestWorld = getLatestValue(indicator.world);
