@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard ODD Santé - Maroc 2025</title>
+    <title>Dashboard Santé - Maroc 2025</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -137,7 +137,13 @@
         .header-left {
             display: flex;
             align-items: center;
-            gap: var(--space-3);
+            gap: var(--space-2);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
         }
 
         .logo {
@@ -157,6 +163,12 @@
             color: white;
             font-size: 1.25rem;
             box-shadow: var(--shadow-md);
+        }
+
+        .header-logo {
+            height: 60px;
+            max-width: 150px;
+            object-fit: contain;
         }
 
         .header-title {
@@ -262,8 +274,8 @@
             gap: var(--space-4);
         }
 
-        .grid-cols-3 {
-            grid-template-columns: repeat(3, 1fr);
+        .grid-cols-2 {
+            grid-template-columns: repeat(2, 1fr);
         }
 
         .card,
@@ -432,6 +444,7 @@
             z-index: 10;
             text-transform: uppercase;
             letter-spacing: 0.05em;
+            min-width: 150px;
         }
 
         .table td {
@@ -440,6 +453,21 @@
             color: var(--text-secondary);
             font-size: 0.875rem;
             font-weight: 500;
+            min-width: 150px;
+        }
+
+        .table td:first-child {
+            cursor: pointer;
+        }
+
+        .table td:nth-child(2),
+        .table td:nth-child(3),
+        .table td:nth-child(4) {
+            white-space: nowrap;
+        }
+
+        .table td:nth-child(5) {
+            white-space: nowrap;
         }
 
         .table tr:hover {
@@ -459,10 +487,19 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.1em;
+            min-width: 90px;
+            justify-content: center;
+            white-space: nowrap;
         }
 
         .badge-success {
             background: var(--gradient-success);
+            color: white;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .badge-warning {
+            background: var(--gradient-warning);
             color: white;
             box-shadow: var(--shadow-sm);
         }
@@ -480,6 +517,67 @@
             font-weight: 600;
         }
 
+        .notes-section {
+            margin-top: var(--space-4);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            background: var(--bg-secondary);
+            padding: var(--space-3);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--bg-secondary);
+            padding: var(--space-6);
+            border-radius: var(--radius-xl);
+            width: 80%;
+            max-width: 600px;
+            box-shadow: var(--shadow-2xl);
+            position: relative;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: var(--space-2);
+            right: var(--space-2);
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: var(--space-4);
+            color: var(--text-primary);
+        }
+
+        #comparisonChart {
+            max-height: 300px;
+        }
+
+        .modal-source {
+            margin-top: var(--space-4);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
         footer {
             background: var(--bg-secondary);
             border-top: 1px solid var(--border);
@@ -491,8 +589,8 @@
         }
 
         @media (max-width: 1024px) {
-            .grid-cols-3 {
-                grid-template-columns: repeat(2, 1fr);
+            .grid-cols-2 {
+                grid-template-columns: 1fr;
             }
 
             .container {
@@ -507,12 +605,15 @@
                 text-align: center;
             }
 
-            .header-actions {
-                flex-wrap: wrap;
+            .header-left {
                 justify-content: center;
             }
 
-            .grid-cols-3 {
+            .header-right {
+                justify-content: center;
+            }
+
+            .grid-cols-2 {
                 grid-template-columns: 1fr;
             }
 
@@ -524,6 +625,7 @@
             .table td {
                 padding: var(--space-2) var(--space-3);
                 font-size: 0.75rem;
+                min-width: 120px;
             }
 
             .stat-value {
@@ -533,6 +635,11 @@
             .card,
             .stat-card {
                 padding: var(--space-3);
+            }
+
+            .header-logo {
+                height: 40px;
+                max-width: 100px;
             }
         }
 
@@ -642,24 +749,29 @@
         <header class="header">
             <div class="header-content">
                 <div class="header-left">
+                    <img src="https://decisiveai.ma/wp-content/uploads/2024/12/Logo-Decisive-AI-PNG.png"
+                        alt="Logo Gauche" class="header-logo">
+                    <img src="logo-right.jpg" alt="Logo Droit" class="header-logo">
                     <div class="logo">
                         <div class="logo-icon">
                             <i class="fas fa-heartbeat"></i>
                         </div>
                         <div>
-                            <h1 class="header-title">ODD Santé</h1>
+                            <h1 class="header-title">Santé</h1>
                             <p class="header-subtitle">Tableau de bord interactif - Maroc 2025</p>
                         </div>
                     </div>
                 </div>
-                <div class="header-actions">
-                    <button class="btn btn-secondary btn-icon" onclick="toggleTheme()" title="Changer le thème">
-                        <i class="fas fa-moon" id="theme-icon"></i>
-                    </button>
-                    <button class="btn btn-primary" onclick="exportData()">
-                        <i class="fas fa-download"></i>
-                        <span>Exporter</span>
-                    </button>
+                <div class="header-right">
+                    <div class="header-actions">
+                        <button class="btn btn-secondary btn-icon" onclick="toggleTheme()" title="Changer le thème">
+                            <i class="fas fa-moon" id="theme-icon"></i>
+                        </button>
+                        <button class="btn btn-primary" onclick="exportData()">
+                            <i class="fas fa-download"></i>
+                            <span>Exporter</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </header>
@@ -668,17 +780,17 @@
             <div class="container">
                 <div class="hero-section fade-in">
                     <div class="hero-content">
-                        <h2 class="hero-title">Suivi des Objectifs de Développement Durable</h2>
+                        <h2 class="hero-title">Suivi des Indicateurs de Santé</h2>
                         <p class="hero-subtitle">Indicateurs de santé pour le Maroc, la région MENA et le monde</p>
                     </div>
                 </div>
 
                 <div id="status-message" class="status-message"></div>
 
-                <div class="grid grid-cols-3 mb-8" style="margin-bottom: var(--space-8);">
+                <div class="grid grid-cols-2 mb-8" style="margin-bottom: var(--space-8);">
                     <div class="stat-card fade-in">
                         <div class="stat-content">
-                            <div class="stat-value" id="total-indicators">12</div>
+                            <div class="stat-value" id="total-indicators">10</div>
                             <div class="stat-label">Total Indicateurs</div>
                             <div class="stat-change positive">
                                 <i class="fas fa-chart-line"></i>
@@ -696,22 +808,12 @@
                             </div>
                         </div>
                     </div>
-                    <div class="stat-card fade-in">
-                        <div class="stat-content">
-                            <div class="stat-value">2030</div>
-                            <div class="stat-label">Échéance ODD</div>
-                            <div class="stat-change">
-                                <i class="fas fa-calendar-alt"></i>
-                                <span>5 ans restants</span>
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
                 <div class="card fade-in">
                     <div class="card-header">
                         <div>
-                            <h3 class="card-title">Indicateurs ODD Santé</h3>
+                            <h3 class="card-title">Indicateurs de Santé</h3>
                             <p class="card-subtitle">Données récentes par région avec statut de progression</p>
                         </div>
                         <div class="card-icon">
@@ -722,8 +824,6 @@
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th>ODD</th>
-                                    <th>Objectif</th>
                                     <th>Indicateur</th>
                                     <th>Maroc</th>
                                     <th>MENA</th>
@@ -735,13 +835,34 @@
                             <tbody id="indicators-table-body"></tbody>
                         </table>
                     </div>
+                    <div class="notes-section">
+                        <p>(*) Valeurs cibles des indicateurs des plans et stratégies nationales.</p>
+                        <p>(***) Selon la stratégie nationale de sécurité routière, l’objectif des pouvoirs publics est
+                            de ramener ce taux à 5,6 décès pour 000 100 habitants à l’horizon 2025.</p>
+                        <p><strong>Source :</strong> ENPSF 2011 et ENPSF 2018, Ministère de la Santé, Enquête Nationale
+                            Démographique 2010-2009, HCP, Enquête nationale sur la consommation et les dépenses des
+                            ménages 2014-2013, HCP 2014, Comité National de prévention des accidents de la circulation
+                            (CNPAC).</p>
+                    </div>
                 </div>
             </div>
         </main>
 
         <footer>
-            <p>© 2025 DecisiveAI - Tous droits réservés. Dashboard ODD Santé Maroc</p>
+            <p>© 2025 DecisiveAI - Tous droits réservés. Dashboard Santé Maroc</p>
         </footer>
+
+        <div id="comparisonModal" class="modal">
+            <div class="modal-content">
+                <span class="close-modal" onclick="closeModal()">×</span>
+                <h3 class="modal-title" id="modalTitle"></h3>
+                <canvas id="comparisonChart"></canvas>
+                <div class="modal-source">
+                    <strong>Source :</strong> OMS: <a href="https://www.who.int/data/gho/whs-annex/"
+                        target="_blank">https://www.who.int/data/gho/whs-annex/</a>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -749,7 +870,8 @@
         let healthIndicators = [];
         let isDarkMode = false;
         const years = ['2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023', '2024'];
-        const predefinedStatuses = ['attention', 'attention', 'achieved', 'achieved', 'attention', 'achieved', 'attention', 'attention', 'attention', 'attention', 'attention', 'attention'];
+        const predefinedStatuses = ['En progrès', 'Atteint', 'Attention', 'En progrès', 'Attention', 'Atteint', 'Attention', 'En progrès', 'Attention', 'En progrès', 'En progrès'];
+        let sortDirection = 'asc';
 
         document.addEventListener('DOMContentLoaded', () => {
             initializeApp();
@@ -789,34 +911,23 @@
         }
 
         function getIndicatorStatus(indicator, index) {
-            return index < predefinedStatuses.length ? predefinedStatuses[index] : 'attention';
-        }
-
-        function compareSubLevels(a, b) {
-            const partsA = a.subLevel.split('.').map(Number);
-            const partsB = b.subLevel.split('.').map(Number);
-            for (let i = 0; i < Math.max(partsA.length, partsB.length); i++) {
-                const numA = partsA[i] || 0;
-                const numB = partsB[i] || 0;
-                if (numA !== numB) {
-                    return numA - numB;
-                }
-            }
-            return 0;
+            return index < predefinedStatuses.length ? predefinedStatuses[index] : 'En progrès';
         }
 
         function populateTable() {
             const tbody = document.getElementById('indicators-table-body');
-            const sortedData = healthIndicators.sort(compareSubLevels);
-            const filteredData = sortedData.filter(indicator => indicator.subLevel !== 'N/A');
-
             tbody.innerHTML = '';
-            if (filteredData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center;">Aucune donnée disponible</td></tr>`;
+            if (healthIndicators.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center;">Aucune donnée disponible</td></tr>`;
                 return;
             }
 
-            filteredData.forEach((indicator, index) => {
+            const sortedIndicators = [...healthIndicators].sort((a, b) => {
+                const comparison = a.indicateur.localeCompare(b.indicateur, 'fr', { sensitivity: 'base' });
+                return sortDirection === 'asc' ? comparison : -comparison;
+            });
+
+            sortedIndicators.forEach((indicator, index) => {
                 const latestMorocco = getLatestValue(indicator.morocco);
                 const latestMena = getLatestValue(indicator.mena);
                 const latestWorld = getLatestValue(indicator.world);
@@ -824,16 +935,18 @@
                 const menaValue = latestMena.value ?? 'N/A';
                 const worldValue = latestWorld.value ?? 'N/A';
                 const status = getIndicatorStatus(indicator, index);
-                const baselineNote = !indicator.baseline?.morocco ? ' (Baseline estimée)' : '';
+                const targetValue = indicator.targetValue ?? 'N/A';
+                const targetValueStr = String(targetValue);
+                const isSafetyIndicator = targetValueStr.includes('5.5');
+                const targetDisplay = isSafetyIndicator ? '5.6' : targetValueStr.replace(/\*+$/, '');
+                const asterisks = targetValueStr.match(/\*+$/) ? targetValueStr.match(/\*+$/)[0] : '';
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td><span class="badge badge-outline">${indicator.subLevel}</span></td>
-                    <td>${indicator.objectif || 'N/A'}</td>
-                    <td>${indicator.indicateur}</td>
-                    <td><strong>${typeof moroccoValue === 'number' ? moroccoValue.toFixed(2) : moroccoValue}${moroccoValue !== 'N/A' ? ` (${latestMorocco.year})` : ''}</strong></td>
-                    <td>${typeof menaValue === 'number' ? menaValue.toFixed(2) : menaValue}${menaValue !== 'N/A' ? ` (${latestMena.year})` : ''}</td>
-                    <td>${typeof worldValue === 'number' ? worldValue.toFixed(2) : worldValue}${worldValue !== 'N/A' ? ` (${latestWorld.year})` : ''}</td>
-                    <td>${indicator.targetValue || 'N/A'}</td>
+                    <td onclick="showComparison('${indicator.indicateur}', ${index})">${indicator.indicateur}</td>
+                    <td><strong>${typeof moroccoValue === 'number' ? moroccoValue.toFixed(2) : moroccoValue}</strong></td>
+                    <td>${typeof menaValue === 'number' ? menaValue.toFixed(2) : menaValue}</td>
+                    <td>${typeof worldValue === 'number' ? worldValue.toFixed(2) : worldValue}</td>
+                    <td>${targetDisplay}${asterisks}</td>
                     <td><span class="badge badge-${getBadgeClass(status)}">${getStatusText(status)}</span></td>
                 `;
                 tbody.appendChild(row);
@@ -841,16 +954,24 @@
         }
 
         function getBadgeClass(status) {
-            return { achieved: 'success', attention: 'danger' }[status] || 'outline';
+            return {
+                'Atteint': 'success',
+                'En progrès': 'warning',
+                'Attention': 'danger'
+            }[status] || 'outline';
         }
 
         function getStatusText(status) {
-            return { achieved: 'Atteint', attention: 'Attention' }[status] || 'Inconnu';
+            return {
+                'Atteint': 'Atteint',
+                'En progrès': 'En progrès',
+                'Attention': 'Attention'
+            }[status] || 'Inconnu';
         }
 
         function updateStats() {
-            const achievedCount = healthIndicators.filter((ind, index) => getIndicatorStatus(ind, index) === 'achieved').length;
-            document.getElementById('total-indicators').textContent = 12; // Fixé à 12
+            const achievedCount = healthIndicators.filter((ind, index) => getIndicatorStatus(ind, index) === 'Atteint').length;
+            document.getElementById('total-indicators').textContent = 10;
             document.getElementById('achieved-targets').textContent = achievedCount;
         }
 
@@ -859,9 +980,12 @@
                 const latestMorocco = getLatestValue(ind.morocco);
                 const latestMena = getLatestValue(ind.mena);
                 const latestWorld = getLatestValue(ind.world);
+                const targetValue = ind.targetValue ?? 'N/A';
+                const targetValueStr = String(targetValue);
+                const isSafetyIndicator = targetValueStr.includes('5.5');
+                const targetDisplay = isSafetyIndicator ? '5.6' : targetValueStr.replace(/\*+$/, '');
+                const asterisks = targetValueStr.match(/\*+$/) ? targetValueStr.match(/\*+$/)[0] : '';
                 return {
-                    'ODD': ind.subLevel,
-                    'Objectif': ind.objectif || 'N/A',
                     'Indicateur': ind.indicateur,
                     'Maroc': latestMorocco.value ?? 'N/A',
                     'Maroc_Année': latestMorocco.year ?? 'N/A',
@@ -869,7 +993,7 @@
                     'MENA_Année': latestMena.year ?? 'N/A',
                     'Monde': latestWorld.value ?? 'N/A',
                     'Monde_Année': latestWorld.year ?? 'N/A',
-                    'Cible': ind.targetValue ?? 'N/A',
+                    'Cible': targetDisplay + asterisks,
                     'Statut': getStatusText(getIndicatorStatus(ind, index))
                 };
             });
@@ -877,17 +1001,17 @@
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = `odd-sante-export-${new Date().toISOString().split('T')[0]}.csv`;
+            link.download = `sante-export-${new Date().toISOString().split('T')[0]}.csv`;
             link.click();
         }
 
         async function loadData() {
             try {
                 document.getElementById('status-message').innerHTML = '<div class="loading">Chargement des données... <div class="spinner"></div></div>';
-                const targetsResponse = await fetch('indicators_goals (13).xlsx');
-                if (!targetsResponse.ok) throw new Error('Fichier indicators_goals (13).xlsx introuvable ou inaccessible');
+                const targetsResponse = await fetch('indicateurs_finaux.xlsx');
+                if (!targetsResponse.ok) throw new Error('Fichier indicateurs_finaux.xlsx introuvable ou inaccessible');
                 const targetsArrayBuffer = await targetsResponse.arrayBuffer();
-                const targetsWorkbook = XLSX.read(targetsArrayBuffer, { type: 'array' });
+                const targetsWorkbook = XLSX.read(targetsArrayBuffer, { type: 'array', raw: false });
                 const targetsSheet = XLSX.utils.sheet_to_json(targetsWorkbook.Sheets[targetsWorkbook.SheetNames[0]], { header: 1 });
                 const targetsHeaders = targetsSheet[0];
                 const targetsData = targetsSheet.slice(1).map(row => {
@@ -897,10 +1021,10 @@
                     }, {});
                 });
 
-                const indicatorsResponse = await fetch('resultat_intersection.xlsx');
-                if (!indicatorsResponse.ok) throw new Error('Fichier resultat_intersection.xlsx introuvable ou inaccessible');
+                const indicatorsResponse = await fetch('fichier_filtré.xlsx');
+                if (!indicatorsResponse.ok) throw new Error('Fichier fichier_filtré.xlsx introuvable ou inaccessible');
                 const indicatorsArrayBuffer = await indicatorsResponse.arrayBuffer();
-                const indicatorsWorkbook = XLSX.read(indicatorsArrayBuffer, { type: 'array' });
+                const indicatorsWorkbook = XLSX.read(indicatorsArrayBuffer, { type: 'array', raw: false });
                 const indicatorsSheet = XLSX.utils.sheet_to_json(indicatorsWorkbook.Sheets[indicatorsWorkbook.SheetNames[0]], { header: 1 });
                 const indicatorsHeaders = indicatorsSheet[0];
                 const indicatorCodeIndex = indicatorsHeaders.indexOf('IndicatorCode');
@@ -910,7 +1034,7 @@
                 const displayValueIndex = indicatorsHeaders.indexOf('DisplayValue');
 
                 if (indicatorCodeIndex === -1 || locationIndex === -1 || locationCodeIndex === -1 || yearIndex === -1 || displayValueIndex === -1) {
-                    throw new Error('Structure incorrecte dans resultat_intersection.xlsx. Vérifiez les colonnes : IndicatorCode, Location, LocationCode, Year, DisplayValue.');
+                    throw new Error('Structure incorrecte dans fichier_filtré.xlsx. Vérifiez les colonnes : IndicatorCode, Location, LocationCode, Year, DisplayValue.');
                 }
 
                 const dataByIndicator = {};
@@ -950,19 +1074,11 @@
                 healthIndicators = Object.keys(dataByIndicator).map(indicatorCode => {
                     const target = targetsData.find(t => t.IndicatorCode === indicatorCode);
                     const indicatorText = target ? target.Indicateur : 'Unknown Indicator';
-                    const subLevelMatch = indicatorText.match(/^(\d+\.(?:\d+|[a-z]+)\.\d+)/);
-
-                    const subLevel = subLevelMatch ? subLevelMatch[1] : 'N/A';
-                    const cleanedIndicator = subLevelMatch ? indicatorText.replace(subLevelMatch[0], '').trim() : indicatorText;
 
                     const indicator = {
                         id: indicatorCode,
-                        cible: target ? target.Cible : 'N/A',
-                        subLevel: subLevel,
-                        indicateur: cleanedIndicator,
-                        objectif: target ? target['Objectif stratégique'] : 'N/A',
+                        indicateur: indicatorText,
                         targetValue: target ? target['Valeur stratégique (résumé)'] : 'N/A',
-                        baseline: {},
                         morocco: dataByIndicator[indicatorCode].morocco,
                         mena: {},
                         world: dataByIndicator[indicatorCode].world
@@ -971,9 +1087,6 @@
                     years.forEach(year => {
                         if (dataByIndicator[indicatorCode].menaCount[year] > 0) {
                             indicator.mena[year] = dataByIndicator[indicatorCode].menaSum[year] / dataByIndicator[indicatorCode].menaCount[year];
-                        }
-                        if (year === '2016' && indicator.morocco[year]) {
-                            indicator.baseline.morocco = indicator.morocco[year];
                         }
                     });
 
@@ -988,6 +1101,70 @@
                 document.getElementById('status-message').innerHTML = `<div class="loading" style="color: var(--danger);">Erreur : ${error.message} <div class="spinner"></div></div>`;
                 healthIndicators = [];
             }
+        }
+
+        function showComparison(indicatorName, index) {
+            const indicator = healthIndicators[index];
+            const latestMorocco = getLatestValue(indicator.morocco);
+            const latestMena = getLatestValue(indicator.mena);
+            const latestWorld = getLatestValue(indicator.world);
+
+            document.getElementById('modalTitle').textContent = `Comparaison - ${indicatorName}`;
+            const ctx = document.getElementById('comparisonChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: [
+                        `Maroc (${latestMorocco.year ?? 'N/A'})`,
+                        `MENA (${latestMena.year ?? 'N/A'})`,
+                        `Monde (${latestWorld.year ?? 'N/A'})`
+                    ],
+                    datasets: [{
+                        label: 'Valeur la plus récente',
+                        data: [
+                            latestMorocco.value ?? 0,
+                            latestMena.value ?? 0,
+                            latestWorld.value ?? 0
+                        ],
+                        backgroundColor: [
+                            'rgba(7, 104, 184, 0.8)',
+                            'rgba(46, 135, 199, 0.8)',
+                            'rgba(126, 179, 224, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(7, 104, 184, 1)',
+                            'rgba(46, 135, 199, 1)',
+                            'rgba(126, 179, 224, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+
+            document.getElementById('comparisonModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('comparisonModal').style.display = 'none';
+            const chart = Chart.getChart('comparisonChart');
+            if (chart) chart.destroy();
+        }
+
+        function sortTable() {
+            sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+            populateTable();
         }
     </script>
 </body>
